@@ -1,6 +1,7 @@
-import logo from './logo.svg';
-import './App.css';
-
+import logo from "./logo.svg";
+import "./App.css";
+import { ThemeProvider } from "@mui/material/styles";
+import theme from "./theme";
 function App() {
   return (
     <div className="App">

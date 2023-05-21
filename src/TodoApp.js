@@ -1,36 +1,43 @@
-import React, { useState } from 'react';
-import { useAtom } from 'jotai';
+import React from "react";
+import { useAtom } from "jotai";
 import {
   todoListAtom,
   inputAtom,
   addTodoAtom,
   removeTodoAtom,
-  editTodoAtom
-} from './atoms';
+  checkTodoAtom,
+} from "./atoms";
 import {
   TextField,
   Button,
   List,
   ListItem,
   ListItemText,
-  IconButton
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
+  IconButton,
+  Checkbox,
+  Box,
+  Typography,
+  Divider,
+  Fab,
+  ListItemButton,
+  ListItemIcon,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import "./TodoApp.css";
+import { Add } from "@mui/icons-material";
 
 const TodoApp = () => {
   const [todoList, setTodoList] = useAtom(todoListAtom);
   const [input, setInput] = useAtom(inputAtom);
   const [, addTodo] = useAtom(addTodoAtom);
   const [, removeTodo] = useAtom(removeTodoAtom);
-  const [, editTodo] = useAtom(editTodoAtom);
-  const [editingId, setEditingId] = useState(null);
-  const [editingText, setEditingText] = useState('');
+  const [checked, setChecked] = useAtom(checkTodoAtom);
 
   const handleAddTodo = () => {
-    if (input.trim() !== '') {
+    if (input.trim() !== "") {
       addTodo(input.trim());
-      setInput('');
+      setInput("");
     }
   };
 
@@ -38,71 +45,28 @@ const TodoApp = () => {
     removeTodo(id);
   };
 
-  const handleEditTodo = (id, text) => {
-    setEditingId(id);
-    setEditingText(text);
-  };
-
-  const handleSaveEdit = (id) => {
-    if (editingText.trim() !== '') {
-      editTodo({
-        id,
-        newText: editingText.trim()
-      });
-      setEditingId(null);
-      setEditingText('');
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingId(null);
-    setEditingText('');
+  const handleCheckTodo = (id) => {
+    setChecked(id);
   };
 
   return (
-    <div>
+    <Box display="flex" flexDirection="column" alignItems="center">
       <TextField
+        className="input"
         value={input}
         onChange={(e) => setInput(e.target.value)}
         placeholder="New Todo..."
       />
-      <Button variant="contained" color="primary" onClick={handleAddTodo}>
-        Add
-      </Button>
-      <List>
-        {todoList.map((todo) => (
-          <ListItem key={todo.id}>
-            {editingId === todo.id ? (
-              <>
-                <TextField
-                  value={editingText}
-                  onChange={(e) => setEditingText(e.target.value)}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleSaveEdit(todo.id)}
-                >
-                  Save
-                </Button>
-                <Button
-                  variant="contained"
-                  color="default"
-                  onClick={handleCancelEdit}
-                >
-                  Cancel
-                </Button>
-              </>
-            ) : (
-              <>
-                <ListItemText primary={todo.text} />
-                <IconButton
-                  edge="end"
-                  aria-label="edit"
-                  onClick={() => handleEditTodo(todo.id, todo.text)}
-                >
-                  <EditIcon />
-                </IconButton>
+      <Fab aria-label="add" color="primary" onClick={handleAddTodo}>
+        <AddIcon />
+      </Fab>
+      <List className="list">
+        {todoList
+          .sort((a, b) => a.completed - b.completed)
+          .map((todo) => (
+            <ListItem
+              key={todo.id}
+              secondaryAction={
                 <IconButton
                   edge="end"
                   aria-label="delete"
@@ -110,12 +74,32 @@ const TodoApp = () => {
                 >
                   <DeleteIcon />
                 </IconButton>
-              </>
-            )}
-          </ListItem>
-        ))}
+              }
+            >
+              <ListItemButton
+                role={undefined}
+                onClick={() => handleCheckTodo(todo.id)}
+                dense
+              >
+                <ListItemIcon>
+                  <Checkbox
+                    edge="start"
+                    checked={todo.completed} // make sure the checkbox is checked if the todo is completed
+                    disableRipple
+                    onClick={() => handleCheckTodo(todo.id)}
+                  />
+                </ListItemIcon>
+                <ListItemText
+                  primary={todo.text}
+                  style={{
+                    textDecoration: todo.completed ? "line-through" : "none",
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
       </List>
-    </div>
+    </Box>
   );
 };
 

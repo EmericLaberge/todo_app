@@ -1,44 +1,39 @@
 import { atom } from "jotai";
 
-
 export const todoListAtom = atom([]);
 export const todoIndexAtom = atom(0);
-export const inputAtom = atom('');
+export const todoCompletedListAtom = atom([]);
+export const inputAtom = atom("");
 
-// TODO: Define addTodoAtom to add a new todo to the list
-export const addTodoAtom = atom(
-  null,
-  (get, set, newTodoItem) => {
-    const todoList = get(todoListAtom); 
-    const todoIndex = get(todoIndexAtom);
-    const newTodo = { id: todoIndex , text: newTodoItem};
-    set(todoListAtom, [...todoList, newTodo]);
-    set(todoIndexAtom,todoIndex + 1);
-  }
-)
+export const addTodoAtom = atom(null, (get, set, newTodoItem) => {
+  const todoList = get(todoListAtom);
+  const todoIndex = get(todoIndexAtom);
 
-// TODO: Define removeTodoAtom to remove a todo from the list based on its id
-export const removeTodoAtom = atom(
-  null,
-  (get, set, key) => {
-    const todoList = get(todoListAtom);
-    const fileredTodo = todoList.filter(object => {
-      return object.id !== key;
-    });
-      set(todoListAtom,fileredTodo);
-  }
-)
-// TODO: Define editTodoAtom to update the text of a todo item
-export const editTodoAtom = atom(
-  null,
-  (get, set, { id, newText }) => {
-    const todoList = get(todoListAtom);
-    const updatedTodoList = todoList.map((todo) => {
-      if (todo.id === id) {
-        return { ...todo, text: newText };
-      }
-      return todo;
-    });
-    set(todoListAtom, updatedTodoList);
-  }
-);
+  const newTodo = { id: todoIndex, text: newTodoItem, completed: false };
+  set(todoListAtom, [...todoList, newTodo]);
+  set(todoIndexAtom, todoIndex + 1);
+});
+
+export const removeTodoAtom = atom(null, (get, set, id) => {
+  const todoList = get(todoListAtom);
+
+  const filteredTodo = todoList.filter((todo) => {
+    return todo.id !== id;
+  });
+
+  set(todoListAtom, filteredTodo);
+});
+export const checkTodoAtom = atom(null, (get, set, todoId) => {
+  const todoList = get(todoListAtom);
+  // Find the todo that needs to be checked
+  const todoIndex = todoList.findIndex((todo) => todo.id === todoId);
+  if (todoIndex === -1) return;
+  // Clone the todo, toggle its completed state
+  const updatedTodo = {
+    ...todoList[todoIndex],
+    completed: !todoList[todoIndex].completed,
+  };
+  const updatedTodoList = [...todoList];
+  updatedTodoList[todoIndex] = updatedTodo;
+  set(todoListAtom, updatedTodoList);
+});
