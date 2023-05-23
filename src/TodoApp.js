@@ -10,7 +10,6 @@ import {
 } from "./atoms";
 import {
   TextField,
-  Button,
   List,
   ListItem,
   ListItemText,
@@ -18,8 +17,6 @@ import {
   Checkbox,
   Box,
   Typography,
-  Divider,
-  Fab,
   ListItemButton,
   ListItemIcon,
 } from "@mui/material";
@@ -29,7 +26,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import "./TodoApp.css";
-
 const TodoApp = () => {
   const [todoList, setTodoList] = useAtom(todoListAtom);
   const [input, setInput] = useAtom(inputAtom);
@@ -41,8 +37,10 @@ const TodoApp = () => {
 
   const handleSaveTodo = (id) => {
     editTodo({ id, newText: editInput });
-    setEditingTodo(null);
-    setEditInput("");
+    if (editingTodo === id) {
+      setEditingTodo(null);
+      setEditInput("");
+    }
   };
 
   const handleEditTodo = (id, text) => {
@@ -62,7 +60,7 @@ const TodoApp = () => {
   };
 
   const handleCheckTodo = (id) => {
-    if (editingTodo === id) return;
+    if (editingTodo !== null) return;
     setTodoList((prevTodoList) =>
       prevTodoList.map((todo) =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
@@ -76,38 +74,40 @@ const TodoApp = () => {
       handleSaveTodo(todoId);
     }
   };
-
-  const handleOnDragEnd = (result) => {
+  const handleOnDragEndNonCompleted = (result) => {
     const { source, destination } = result;
-
     if (!destination) {
       return;
     }
-
-    if (source.droppableId !== destination.droppableId) {
-      // dragging between two lists
+    const sortedList = Array.from(todoList.filter((todo) => !todo.completed));
+    const [reorderedItem] = sortedList.splice(source.index, 1);
+    sortedList.splice(destination.index, 0, reorderedItem);
+    const newTodoList = [
+      ...sortedList,
+      ...todoList.filter((todo) => todo.completed),
+    ];
+    setTodoList(newTodoList);
+  };
+  const handleOnDragEndCompleted = (result) => {
+    const { source, destination } = result;
+    if (!destination) {
       return;
     }
-
-    if (source.droppableId === "nonCompletedTodos") {
-      const items = Array.from(nonCompletedTodoList);
-      const [reorderedItem] = items.splice(source.index, 1);
-      items.splice(destination.index, 0, reorderedItem);
-      setTodoList([...items, ...completedTodoList]);
-    } else {
-      const items = Array.from(completedTodoList);
-      const [reorderedItem] = items.splice(source.index, 1);
-      items.splice(destination.index, 0, reorderedItem);
-      setTodoList([...nonCompletedTodoList, ...items]);
-    }
+    const sortedList = Array.from(todoList.filter((todo) => todo.completed));
+    const [reorderedItem] = sortedList.splice(source.index, 1);
+    sortedList.splice(destination.index, 0, reorderedItem);
+    const newTodoList = [
+      ...todoList.filter((todo) => !todo.completed),
+      ...sortedList,
+    ];
+    setTodoList(newTodoList);
   };
 
-  const nonCompletedTodoList = todoList.filter((todo) => !todo.completed);
-  const completedTodoList = todoList.filter((todo) => todo.completed);
-
+  const nonCompletedTodos = todoList.filter((todo) => !todo.completed);
+  const completedTodos = todoList.filter((todo) => todo.completed);
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <Typography variant="h3" textAlign={"center"}>
+      <Typography variant="h3" textAlign={"center"} className="title">
         Todo List
       </Typography>
       <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -130,7 +130,7 @@ const TodoApp = () => {
           <AddIcon />
         </IconButton>
       </Box>
-      <DragDropContext onDragEnd={handleOnDragEnd}>
+      <DragDropContext onDragEnd={handleOnDragEndNonCompleted}>
         <Typography variant="h4">Non-completed tasks:</Typography>
         <Droppable droppableId="nonCompletedTodos">
           {(provided) => (
@@ -139,7 +139,7 @@ const TodoApp = () => {
               ref={provided.innerRef}
               className="list"
             >
-              {nonCompletedTodoList.map((todo, index) => (
+              {nonCompletedTodos.map((todo, index) => (
                 <Draggable
                   key={todo.id}
                   draggableId={todo.id.toString()}
@@ -151,7 +151,6 @@ const TodoApp = () => {
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                     >
-                      {/* The code for non-completed tasks */}
                       <ListItemButton
                         role={undefined}
                         onClick={() => handleCheckTodo(todo.id)}
@@ -191,7 +190,10 @@ const TodoApp = () => {
                           <IconButton
                             edge="end"
                             aria-label="edit"
-                            onClick={() => handleEditTodo(todo.id, todo.text)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleEditTodo(todo.id, todo.text);
+                            }}
                           >
                             <EditIcon />
                           </IconButton>
@@ -223,6 +225,8 @@ const TodoApp = () => {
             </List>
           )}
         </Droppable>
+      </DragDropContext>
+      <DragDropContext onDragEnd={handleOnDragEndCompleted}>
         <Typography variant="h4">Completed tasks:</Typography>
         <Droppable droppableId="completedTodos">
           {(provided) => (
@@ -231,7 +235,7 @@ const TodoApp = () => {
               ref={provided.innerRef}
               className="list"
             >
-              {completedTodoList.map((todo, index) => (
+              {completedTodos.map((todo, index) => (
                 <Draggable
                   key={todo.id}
                   draggableId={todo.id.toString()}
@@ -243,7 +247,6 @@ const TodoApp = () => {
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
                     >
-                      {/* The code for completed tasks */}
                       <ListItemButton
                         role={undefined}
                         onClick={() => handleCheckTodo(todo.id)}
@@ -283,7 +286,10 @@ const TodoApp = () => {
                           <IconButton
                             edge="end"
                             aria-label="edit"
-                            onClick={() => handleEditTodo(todo.id, todo.text)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleEditTodo(todo.id, todo.text);
+                            }}
                           >
                             <EditIcon />
                           </IconButton>
