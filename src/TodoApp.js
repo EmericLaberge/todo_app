@@ -30,6 +30,7 @@ import {
 } from "./atoms";
 
 import "./TodoApp.css";
+import { lightGreen } from "@mui/material/colors";
 
 const TodoApp = () => {
   // Array of todo objects
@@ -154,27 +155,25 @@ const TodoApp = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent={"center"}
-      >
+      <Box display="flex" flexDirection="column" justifyContent={"center"}>
         {/* Todo list title */}
         <Typography
           variant="h1"
           style={{
             margin: "30px 0 10px 0",
+            textAlign: "center",
           }}
         >
           Todo List
         </Typography>
 
         {/* Box to hold the input field and add button */}
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box display="flex" justifyContent="center">
           <TextField
             style={{
               margin: "20px 0px",
+              width: "50%",
+              backgroundColor: "#C8E6C9",
             }}
             value={input} // set the value of the input text to the input state
             // update the input value when the user types
@@ -187,7 +186,6 @@ const TodoApp = () => {
             }}
             placeholder="New Todo..." // placeholder text
           />
-
           {/* Add button that calls the handleAddTodo function when clicked */}
           <IconButton
             aria-label="add"
@@ -267,6 +265,9 @@ const TodoApp = () => {
                               )}
                               {editingTodo === todo.id ? (
                                 <TextField
+                                  style={{
+                                    width: "100%",
+                                  }}
                                   value={editInput}
                                   onChange={(e) => setEditInput(e.target.value)}
                                   onKeyPress={(e) =>
@@ -383,6 +384,9 @@ const TodoApp = () => {
                               )}
                               {editingTodo === todo.id ? (
                                 <TextField
+                                  style={{
+                                    width: "100%",
+                                  }}
                                   value={editInput}
                                   onChange={(e) => setEditInput(e.target.value)}
                                   onKeyPress={(e) =>

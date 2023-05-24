@@ -18,6 +18,14 @@ const theme = createTheme({
   },
   typography: {
     fontSize: 20, // Set the default font size (in pixels)
+    h1: {
+      // h1 is a variant (defined below)
+      fontSize: "5rem",
+    },
+    h2: {
+      // h2 is a variant (defined below)
+      fontSize: "4rem",
+    },
   },
 });
 
