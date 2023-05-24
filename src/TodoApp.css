@@ -7,3 +7,26 @@
 .title{
   margin-top: 100px;  
 }
+
+/* put a background image to the body */ 
+body {
+  background-color: lightgray;
+  color : black;
+}
+
+.list {
+  /* CSS rules for the list */
+}
+
+.listItemButton-completed-editing {
+  background-color: #99a8bb;
+  border-radius: 15px;
+  text-decoration: line-through;
+}
+
+.listItemButton-nonCompleted {
+  background-color: lightblue;
+  border-radius: 15px;
+}
+
+/* add more CSS rules as needed */

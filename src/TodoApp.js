@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import { useAtom } from "jotai";
 import {
   todoListAtom,
@@ -7,6 +6,7 @@ import {
   removeTodoAtom,
   editTodoAtom,
   editInputAtom,
+  editingTodoAtom
 } from "./atoms";
 import {
   TextField,
@@ -26,6 +26,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import CheckIcon from "@mui/icons-material/Check";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import "./TodoApp.css";
+
 const TodoApp = () => {
   const [todoList, setTodoList] = useAtom(todoListAtom);
   const [input, setInput] = useAtom(inputAtom);
@@ -33,7 +34,7 @@ const TodoApp = () => {
   const [, removeTodo] = useAtom(removeTodoAtom);
   const [, editTodo] = useAtom(editTodoAtom);
   const [editInput, setEditInput] = useAtom(editInputAtom);
-  const [editingTodo, setEditingTodo] = useState(null);
+  const [editingTodo, setEditingTodo] = useAtom(editingTodoAtom)
 
   const handleSaveTodo = (id) => {
     editTodo({ id, newText: editInput });
@@ -50,8 +51,8 @@ const TodoApp = () => {
 
   const handleAddTodo = () => {
     if (input.trim() !== "") {
-      addTodo(input.trim());
-      setInput("");
+      addTodo(input.trim()); // remove whitespaces before and after
+      setInput(""); // reset the input 
     }
   };
 
@@ -59,8 +60,9 @@ const TodoApp = () => {
     removeTodo(id);
   };
 
+  //TODO: improve readability
   const handleCheckTodo = (id) => {
-    if (editingTodo !== null) return;
+    if (editingTodo === id) return; // prevent clicking check when editing 
     setTodoList((prevTodoList) =>
       prevTodoList.map((todo) =>
         todo.id === id ? { ...todo, completed: !todo.completed } : todo
@@ -70,17 +72,21 @@ const TodoApp = () => {
 
   const handleEditKeyPress = (e, todoId) => {
     if (e.key === "Enter") {
-      e.preventDefault(); // Prevent form submission
-      handleSaveTodo(todoId);
+      e.preventDefault(); // Prevent form submission by default
+      handleSaveTodo(todoId); // call the handle save
     }
   };
+
   const handleOnDragEndNonCompleted = (result) => {
     const { source, destination } = result;
     if (!destination) {
       return;
     }
     const sortedList = Array.from(todoList.filter((todo) => !todo.completed));
-    const [reorderedItem] = sortedList.splice(source.index, 1);
+    // create a copy of sortedList without the grabbed item
+    const [reorderedItem] = sortedList.splice(source.index, 1)
+
+
     sortedList.splice(destination.index, 0, reorderedItem);
     const newTodoList = [
       ...sortedList,
@@ -88,6 +94,7 @@ const TodoApp = () => {
     ];
     setTodoList(newTodoList);
   };
+
   const handleOnDragEndCompleted = (result) => {
     const { source, destination } = result;
     if (!destination) {
@@ -107,11 +114,16 @@ const TodoApp = () => {
   const completedTodos = todoList.filter((todo) => todo.completed);
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <Typography variant="h3" textAlign={"center"} className="title">
+      <Typography variant="h1" style={{
+        margin: '30px 0 10px 0'
+      }}>
         Todo List
       </Typography>
-      <Box display="flex" justifyContent="space-between" alignItems="center">
+      <Box display="flex" justifyContent="space-between" alignItems="center" >
         <TextField
+          style={{
+            margin: '20px 0px',
+          }}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={(e) => {
@@ -130,199 +142,213 @@ const TodoApp = () => {
           <AddIcon />
         </IconButton>
       </Box>
-      <DragDropContext onDragEnd={handleOnDragEndNonCompleted}>
-        <Typography variant="h4">Non-completed tasks:</Typography>
-        <Droppable droppableId="nonCompletedTodos">
-          {(provided) => (
-            <List
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="list"
-            >
-              {nonCompletedTodos.map((todo, index) => (
-                <Draggable
-                  key={todo.id}
-                  draggableId={todo.id.toString()}
-                  index={index}
+
+      <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexDirection={"row"}>
+        <Box>
+          <DragDropContext onDragEnd={handleOnDragEndNonCompleted}>
+            <Typography variant="h2" style={{
+              margin: '0 10px 0 10px',
+            }}> Todo </Typography>
+            <Droppable droppableId="nonCompletedTodos">
+              {(provided) => (
+                <List
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="list"
                 >
-                  {(provided) => (
-                    <ListItem
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
+                  {nonCompletedTodos.map((todo, index) => (
+                    <Draggable
+                      key={todo.id}
+                      draggableId={todo.id.toString()}
+                      index={index}
                     >
-                      <ListItemButton
-                        role={undefined}
-                        onClick={() => handleCheckTodo(todo.id)}
-                        style={
-                          todo.completed && editingTodo !== todo.id
-                            ? { backgroundColor: "#e0e0e0" }
-                            : { backgroundColor: "#fff" }
-                        }
-                        dense
-                      >
-                        {editingTodo !== todo.id && (
-                          <ListItemIcon>
-                            <Checkbox
-                              edge="start"
-                              checked={todo.completed}
-                              disableRipple
-                            />
-                          </ListItemIcon>
-                        )}
-                        {editingTodo === todo.id ? (
-                          <TextField
-                            value={editInput}
-                            onChange={(e) => setEditInput(e.target.value)}
-                            onKeyPress={(e) => handleEditKeyPress(e, todo.id)}
-                          />
-                        ) : (
-                          <ListItemText
-                            primary={todo.text}
-                            style={{
-                              textDecoration: todo.completed
-                                ? "line-through"
-                                : "none",
-                            }}
-                          />
-                        )}
-                        {editingTodo !== todo.id && (
-                          <IconButton
-                            edge="end"
-                            aria-label="edit"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleEditTodo(todo.id, todo.text);
-                            }}
+                      {(provided) => (
+                        <ListItem
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+
+                          <!--
+                          <ListItemButton
+                            role={undefined}
+                            onClick={() => handleCheckTodo(todo.id)}
+                            style={
+                              todo.completed && editingTodo !== todo.id
+                                ? { backgroundColor: "#99a8bb", borderRadius: "15px" }
+                                : { backgroundColor: "lightblue", borderRadius: "15px" }
+                            }
+                            dense
                           >
-                            <EditIcon />
-                          </IconButton>
-                        )}
-                        {editingTodo !== todo.id && (
-                          <IconButton
-                            edge="end"
-                            aria-label="delete"
-                            onClick={() => handleRemoveTodo(todo.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        )}
-                        {editingTodo === todo.id && (
-                          <IconButton
-                            edge="end"
-                            aria-label="save"
-                            onClick={() => handleSaveTodo(todo.id)}
-                          >
-                            <CheckIcon />
-                          </IconButton>
-                        )}
-                      </ListItemButton>
-                    </ListItem>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </List>
-          )}
-        </Droppable>
-      </DragDropContext>
-      <DragDropContext onDragEnd={handleOnDragEndCompleted}>
-        <Typography variant="h4">Completed tasks:</Typography>
-        <Droppable droppableId="completedTodos">
-          {(provided) => (
-            <List
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="list"
-            >
-              {completedTodos.map((todo, index) => (
-                <Draggable
-                  key={todo.id}
-                  draggableId={todo.id.toString()}
-                  index={index}
+                            {editingTodo !== todo.id && (
+                              <ListItemIcon>
+                                <Checkbox
+                                  edge="start"
+                                  checked={todo.completed}
+                                  disableRipple
+                                />
+                              </ListItemIcon>
+                            )}
+                            {editingTodo === todo.id ? (
+                              <TextField
+                                value={editInput}
+                                onChange={(e) => setEditInput(e.target.value)}
+                                onKeyPress={(e) => handleEditKeyPress(e, todo.id)}
+                              />
+                            ) : (
+                              <ListItemText
+                                primary={todo.text}
+                                style={{
+                                  textDecoration: todo.completed
+                                    ? "line-through"
+                                    : "none",
+                                }}
+                              />
+                            )}
+                            {editingTodo !== todo.id && (
+                              <IconButton
+                                edge="end"
+                                aria-label="edit"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleEditTodo(todo.id, todo.text);
+                                }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            )}
+                            {editingTodo !== todo.id && (
+                              <IconButton
+                                edge="end"
+                                aria-label="delete"
+                                onClick={() => handleRemoveTodo(todo.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                            {editingTodo === todo.id && (
+                              <IconButton
+                                edge="end"
+                                aria-label="save"
+                                onClick={() => handleSaveTodo(todo.id)}
+                              >
+                                <CheckIcon />
+                              </IconButton>
+                            )}
+                          </ListItemButton>
+                        </ListItem>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </List>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </Box>
+        <Box>
+          <DragDropContext onDragEnd={handleOnDragEndCompleted}>
+            <Typography variant="h2" style={{
+              margin: '0 10px 0 10px'
+            }}> Done </Typography>
+            <Droppable droppableId="completedTodos">
+              {(provided) => (
+                <List
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="list"
                 >
-                  {(provided) => (
-                    <ListItem
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
+                  {completedTodos.map((todo, index) => (
+                    <Draggable
+                      key={todo.id}
+                      draggableId={todo.id.toString()}
+                      index={index}
                     >
-                      <ListItemButton
-                        role={undefined}
-                        onClick={() => handleCheckTodo(todo.id)}
-                        style={
-                          todo.completed && editingTodo !== todo.id
-                            ? { backgroundColor: "#e0e0e0" }
-                            : { backgroundColor: "#fff" }
-                        }
-                        dense
-                      >
-                        {editingTodo !== todo.id && (
-                          <ListItemIcon>
-                            <Checkbox
-                              edge="start"
-                              checked={todo.completed}
-                              disableRipple
-                            />
-                          </ListItemIcon>
-                        )}
-                        {editingTodo === todo.id ? (
-                          <TextField
-                            value={editInput}
-                            onChange={(e) => setEditInput(e.target.value)}
-                            onKeyPress={(e) => handleEditKeyPress(e, todo.id)}
-                          />
-                        ) : (
-                          <ListItemText
-                            primary={todo.text}
-                            style={{
-                              textDecoration: todo.completed
-                                ? "line-through"
-                                : "none",
-                            }}
-                          />
-                        )}
-                        {editingTodo !== todo.id && (
-                          <IconButton
-                            edge="end"
-                            aria-label="edit"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleEditTodo(todo.id, todo.text);
-                            }}
+                      {(provided) => (
+                        <ListItem
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          <ListItemButton
+                            role={undefined}
+                            onClick={() => handleCheckTodo(todo.id)}
+                            style={
+                              todo.completed
+
+                                ? { backgroundColor: "#99a8bb", borderRadius: "15px" }
+                                : { backgroundColor: "lightblue", borderRadius: "15px" }
+                            }
+                            dense
                           >
-                            <EditIcon />
-                          </IconButton>
-                        )}
-                        {editingTodo !== todo.id && (
-                          <IconButton
-                            edge="end"
-                            aria-label="delete"
-                            onClick={() => handleRemoveTodo(todo.id)}
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        )}
-                        {editingTodo === todo.id && (
-                          <IconButton
-                            edge="end"
-                            aria-label="save"
-                            onClick={() => handleSaveTodo(todo.id)}
-                          >
-                            <CheckIcon />
-                          </IconButton>
-                        )}
-                      </ListItemButton>
-                    </ListItem>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </List>
-          )}
-        </Droppable>
-      </DragDropContext>
-    </Box>
+                            {editingTodo !== todo.id && (
+                              <ListItemIcon>
+                                <Checkbox
+                                  edge="start"
+                                  checked={todo.completed}
+                                  disableRipple
+                                />
+                              </ListItemIcon>
+                            )}
+                            {editingTodo === todo.id ? (
+                              <TextField
+                                value={editInput}
+                                onChange={(e) => setEditInput(e.target.value)}
+                                onKeyPress={(e) => handleEditKeyPress(e, todo.id)}
+                              />
+                            ) : (
+                              <ListItemText
+                                primary={todo.text}
+                                style={{
+                                  textDecoration: todo.completed
+                                    ? "line-through"
+                                    : "none",
+                                }}
+                              />
+                            )}
+                            {editingTodo !== todo.id && (
+                              <IconButton
+                                edge="end"
+                                aria-label="edit"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleEditTodo(todo.id, todo.text);
+                                }}
+                              >
+                                <EditIcon />
+                              </IconButton>
+                            )}
+                            {editingTodo !== todo.id && (
+                              <IconButton
+                                edge="end"
+                                aria-label="delete"
+                                onClick={() => handleRemoveTodo(todo.id)}
+                              >
+                                <DeleteIcon />
+                              </IconButton>
+                            )}
+                            {editingTodo === todo.id && (
+                              <IconButton
+                                edge="end"
+                                aria-label="save"
+                                onClick={() => handleSaveTodo(todo.id)}
+                              >
+                                <CheckIcon />
+                              </IconButton>
+                            )}
+                          </ListItemButton>
+                        </ListItem>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </List>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </Box >
+      </Box >
+    </Box >
   );
 };
 
