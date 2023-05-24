@@ -17,16 +17,7 @@ const theme = createTheme({
     //... you can define other color types (error, warning, info, success)
   },
   typography: {
-    fontFamily: "Roboto, sans-serif", // Set the default font family
     fontSize: 20, // Set the default font size (in pixels)
-    h1: {
-      fontSize: "2.5rem", // Set the font size for h1 (heading level 1)
-      fontWeight: 600, // Set the font weight for h1
-    },
-    h2: {
-      fontSize: "2rem", // Set the font size for h2 (heading level 2)
-      fontWeight: 600, // Set the font weight for h2
-    },
   },
 });
 
