@@ -184,7 +184,7 @@ const TodoApp = () => {
                 handleAddTodo();
               }
             }}
-            placeholder="New Todo..." // placeholder text
+            placeholder="New To Do ..." // placeholder text
           />
           {/* Add button that calls the handleAddTodo function when clicked */}
           <IconButton
