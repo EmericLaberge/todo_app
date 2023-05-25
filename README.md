@@ -12,7 +12,7 @@ This application is a To-Do list with a simple, user-friendly UI, which allows y
 
 ## Technology
 
-This application is built using React, and uses the `jotai` state management library to handle application state.
+This application is built using React, and uses the [jotai](https://jotai.org) state management library to handle application state.
 
 I also used the [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd) library to implement drag and drop functionality.
 
