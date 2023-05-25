@@ -164,7 +164,7 @@ const TodoApp = () => {
             textAlign: "center",
           }}
         >
-          Todo List
+          To Do List
         </Typography>
 
         {/* Box to hold the input field and add button */}
@@ -215,7 +215,7 @@ const TodoApp = () => {
                   margin: "0 10px 0 10px",
                 }}
               >
-                Todo
+                To Do
               </Typography>
               <Droppable droppableId="nonCompletedTodos">
                 {(provided) => (
