@@ -215,7 +215,7 @@ const TodoApp = () => {
                   margin: "0 10px 0 10px",
                 }}
               >
-                To Do
+                Pending
               </Typography>
               <Droppable droppableId="nonCompletedTodos">
                 {(provided) => (
@@ -244,13 +244,13 @@ const TodoApp = () => {
                               style={
                                 todo.completed && editingTodo !== todo.id
                                   ? {
-                                      backgroundColor: "#99a8bb",
-                                      borderRadius: "15px",
-                                    }
+                                    backgroundColor: "#99a8bb",
+                                    borderRadius: "15px",
+                                  }
                                   : {
-                                      backgroundColor: "lightblue",
-                                      borderRadius: "15px",
-                                    }
+                                    backgroundColor: "lightblue",
+                                    borderRadius: "15px",
+                                  }
                               }
                               dense
                             >
@@ -363,13 +363,13 @@ const TodoApp = () => {
                               style={
                                 todo.completed
                                   ? {
-                                      backgroundColor: "#99a8bb",
-                                      borderRadius: "15px",
-                                    }
+                                    backgroundColor: "#99a8bb",
+                                    borderRadius: "15px",
+                                  }
                                   : {
-                                      backgroundColor: "lightblue",
-                                      borderRadius: "15px",
-                                    }
+                                    backgroundColor: "lightblue",
+                                    borderRadius: "15px",
+                                  }
                               }
                               dense
                             >
