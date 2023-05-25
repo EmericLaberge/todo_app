@@ -1,5 +1,4 @@
 import { atom } from "jotai";
-
 export const todoListAtom = atom([]);
 export const todoIndexAtom = atom(0);
 export const editingTodoAtom = atom(null);

@@ -30,7 +30,7 @@ If you want to run the application locally, follow these steps:
 
 ## State Management
 
-The application uses `jotai` for atomic state management. Here is a brief explanation of each atom used:
+The application uses [jotai](https://jotai.org) for atomic state management. Here is a brief explanation of each atom used:
 
 1. `todoListAtom`: An atom that keeps track of all the tasks.
 2. `todoIndexAtom`: An atom that keeps track of the next index for new tasks.
